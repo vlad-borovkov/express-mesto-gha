@@ -22,3 +22,21 @@ module.exports.createUser = (req, res) => {
     // данные не записались, вернём ошибку
     .catch((err) => res.status(500).send({ message: err.message }));
 };
+
+module.exports.updateUser = (req, res) => {
+  const { name } = req.body;
+
+  User.findByIdAndUpdate(req.user._id, { name: name })
+    .then((user) => res.send(`Имя пользователя ${user.name} обновлено успешно`))
+    .catch((err) => res.status(500).send({ message: err.message }));
+};
+
+module.exports.updateUserAvatar = (req, res) => {
+  const { avatar } = req.body;
+
+  User.findByIdAndUpdate(req.user._id, { avatar: avatar })
+    .then((user) =>
+      res.send(`Аватар пользователя ${user.name} обновлён успешно`)
+    )
+    .catch((err) => res.status(500).send({ message: err.message }));
+};
