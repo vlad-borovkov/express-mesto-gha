@@ -1,15 +1,14 @@
 const User = require("../models/user");
 
-module.exports.getUsers = (req, res) => {
+module.exports.getAllUsers = (req, res) => {
   User.find({})
-    .populate("user")
+    // .populate("user") нужен в карточках
     .then((users) => res.send({ data: users }))
     .catch((err) => res.status(500).send({ message: err.message }));
 };
 
 module.exports.getUserById = (req, res) => {
-  User.findById(req.params.id) //методом поиска обращаемся к бд
-    .populate("user")
+  User.findById(req.params.userId) //методом поиска обращаемся к бд
     .then((user) => res.send({ data: user }))
     .catch((err) => res.status(500).send({ message: err.message }));
 };
@@ -23,11 +22,3 @@ module.exports.createUser = (req, res) => {
     // данные не записались, вернём ошибку
     .catch((err) => res.status(500).send({ message: err.message }));
 };
-
-// module.exports.createFilm = (req, res) => {
-//   const { title, genre, directorId } = req.body;
-
-//   Film.create({ title, genre, director: directorId })
-//     .then((film) => res.send({ data: film }))
-//     .catch((err) => res.status(500).send({ message: err.message }));
-// };
