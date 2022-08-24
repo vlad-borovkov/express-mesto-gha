@@ -23,19 +23,23 @@ module.exports.deleteCardById = (req, res) => {
 };
 
 module.exports.likeCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .then((card) => res.send({ data: card }))
+  console.log(req.params.cardId);
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+    { new: true }
+  )
+    .populate("likes")
+    .then((likeOnCard) => res.send({ data: likeOnCard }))
     .catch((err) => res.status(500).send({ message: err.message }));
 };
 
-// module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
-//   req.params.cardId,
-//   { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-//   { new: true },
-// )
-
-// module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
-//   req.params.cardId,
-//   { $pull: { likes: req.user._id } }, // убрать _id из массива
-//   { new: true },
-// )
+module.exports.dislikeCard = (req, res) => {
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $pull: { likes: req.user._id } }, // убрать _id из массива
+    { new: true }
+  )
+    .then((deleteLike) => res.send(`лайк на карточке ${deleteLike} удалён`))
+    .catch((err) => res.status(500).send({ message: err.message }));
+};
