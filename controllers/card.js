@@ -26,14 +26,23 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCardById = (req, res) => {
   Card.findByIdAndRemove({ _id: req.params.cardId })
-    .then((card) => res.status(200).send({ data: `карточка удалена` }))
+    .orFail(() => {
+      const error = new Error();
+      error.statusCode = 404;
+      throw error;
+    })
+    .then((card) => res.status(200).send({ data: `Карточка удалена!` }))
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(404).send({
-          message: `Карточка с указанным _id не найдена`,
+        res.status(400).send({
+          message: `Переданы некорректные данные для удаления карточки`,
         });
+      } else if (err.statusCode === 404) {
+        res
+          .status(404)
+          .send({ message: `Карточка с указанным _id не найдена.` });
       } else {
-        res.status(500).send({ message: `Ошибка на сервере ${err.name}` });
+        res.status(500).send({ message: `Ошибка на сервере ${err.message}` });
       }
     });
 };
@@ -44,14 +53,19 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true }
   )
+    .orFail(() => {
+      const error = new Error();
+      error.statusCode = 404;
+      throw error;
+    })
     .populate("likes")
     .then((likeOnCard) => res.status(200).send({ data: likeOnCard }))
     .catch((err) => {
-      if (err.name === "ValidationError") {
+      if (err.name === "CastError") {
         res.status(400).send({
           message: `Переданы некорректные данные для постановки/снятии лайка`,
         });
-      } else if (err.name === "CastError") {
+      } else if (err.statusCode === 404) {
         res
           .status(404)
           .send({ message: `Передан несуществующий _id карточки` });
@@ -67,16 +81,16 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true }
   )
-    .then((deleteLike) => res.status(200).send(`лайк на карточке удалён`))
+    .then((deleteLike) => res.status(200).send(`Лайк на карточке удалён`))
     .catch((err) => {
-      if (err.name === "ValidationError") {
+      if (err.name === "CastError") {
         res.status(400).send({
-          message: `Переданы некорректные данные при обновлении профиля`,
+          message: `Переданы некорректные данные для постановки/снятии лайка`,
         });
-      } else if (err.name === "CastError") {
+      } else if (err.statusCode === 404) {
         res
           .status(404)
-          .send({ message: `Пользователь с указанным _id не найден` });
+          .send({ message: `Передан несуществующий _id карточки` });
       } else {
         res.status(500).send({ message: `Ошибка на сервере ${err.message}` });
       }

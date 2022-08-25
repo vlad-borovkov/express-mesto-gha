@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
+    required: [true, 'Поле "name" должно быть заполнено'],
     minlength: 2,
     maxlength: 30,
   },

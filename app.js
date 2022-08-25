@@ -21,9 +21,10 @@ app.use("/users", require("./routes/users"));
 app.use("/cards", require("./routes/card"));
 
 app.use((req, res, next) => {
-  res
-    .status(404)
-    .send({ message: "Страница по указанному маршруту не найдена" });
+  res.status(404).send({
+    message:
+      "Вы попали на сервер Mesto. Воспользуйтесь эндпоинтами для операций с данными.",
+  });
 
   next();
 });

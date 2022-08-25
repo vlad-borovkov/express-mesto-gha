@@ -8,14 +8,23 @@ module.exports.getAllUsers = (req, res) => {
 
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.userId) //методом поиска обращаемся к бд
+    .orFail(() => {
+      const error = new Error();
+      error.statusCode = 404;
+      throw error;
+    })
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       if (err.name === "CastError") {
+        res.status(400).send({
+          message: `Переданы некорректные данные`,
+        });
+      } else if (err.statusCode === 404) {
         res.status(404).send({
           message: `Пользователь по указанному _id не найден`,
         });
       } else {
-        res.status(500).send({ message: `Ошибка на сервере ${err.message}` });
+        res.send({ message: `Ошибка на сервере ${err.message}` });
       }
     });
 };
@@ -74,9 +83,7 @@ module.exports.updateUserAvatar = (req, res) => {
       error.statusCode = 404;
       throw error;
     })
-    .then((user) =>
-      res.status(200).send(`Аватар пользователя ${user.name} обновлён успешно`)
-    )
+    .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       if (err.name === "ValidationError") {
         res.status(400).send({
