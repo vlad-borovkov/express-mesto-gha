@@ -81,6 +81,11 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true }
   )
+    .orFail(() => {
+      const error = new Error();
+      error.statusCode = 404;
+      throw error;
+    })
     .then((deleteLike) => res.status(200).send(`Лайк на карточке удалён`))
     .catch((err) => {
       if (err.name === "CastError") {
