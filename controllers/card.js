@@ -86,7 +86,9 @@ module.exports.dislikeCard = (req, res) => {
       error.statusCode = 404;
       throw error;
     })
-    .then((deleteLike) => res.status(200).send(`Лайк на карточке удалён`))
+    .then((deleteLike) =>
+      res.status(200).send({ data: `Лайк на карточке удалён` })
+    )
     .catch((err) => {
       if (err.name === "CastError") {
         res.status(400).send({

@@ -77,13 +77,17 @@ module.exports.updateUser = (req, res) => {
 module.exports.updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { avatar: avatar })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { avatar: avatar },
+    { new: true, runValidators: true }
+  )
     .orFail(() => {
       const error = new Error();
       error.statusCode = 404;
       throw error;
     })
-    .then((user) => res.status(200).send({ data: `Аватар успешно обновлён!` }))
+    .then((user) => res.status(200).send({ data: "Аватар успешно обновлён!" }))
     .catch((err) => {
       if (err.name === "ValidationError") {
         res.status(400).send({
