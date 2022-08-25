@@ -87,7 +87,7 @@ module.exports.updateUserAvatar = (req, res) => {
       error.statusCode = 404;
       throw error;
     })
-    .then((user) => res.status(200).send({ data: "Аватар успешно обновлён!" }))
+    .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       if (err.name === "ValidationError") {
         res.status(400).send({
