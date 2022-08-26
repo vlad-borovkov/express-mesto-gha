@@ -1,10 +1,20 @@
 const Card = require("../models/card");
 
+const ERR = {
+  IntServ: 500,
+  NotFound: 404,
+  BadRequest: 400,
+};
+
+const OK = {
+  OK: 200,
+};
+
 module.exports.getAllCards = (req, res) => {
   Card.find({})
     .populate("owner")
-    .then((cards) => res.status(200).send({ data: cards }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .then((cards) => res.status(OK.OK).send({ data: cards }))
+    .catch((err) => res.status(ERR.IntServ).send({ message: err.message }));
 };
 
 module.exports.createCard = (req, res) => {
@@ -15,11 +25,13 @@ module.exports.createCard = (req, res) => {
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(400).send({
+        res.status(ERR.BadRequest).send({
           message: `Переданы некорректные данные при создании карточки`,
         });
       } else {
-        res.status(500).send({ message: `Ошибка на сервере ${err.message}` });
+        res
+          .status(ERR.IntServ)
+          .send({ message: `Ошибка на сервере ${err.message}` });
       }
     });
 };
@@ -28,21 +40,23 @@ module.exports.deleteCardById = (req, res) => {
   Card.findByIdAndRemove({ _id: req.params.cardId })
     .orFail(() => {
       const error = new Error();
-      error.statusCode = 404;
+      error.statusCode = ERR.NotFound;
       throw error;
     })
-    .then((card) => res.status(200).send({ data: `Карточка удалена!` }))
+    .then((card) => res.status(OK.OK).send({ data: `Карточка удалена!` }))
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(400).send({
+        res.status(ERR.BadRequest).send({
           message: `Переданы некорректные данные для удаления карточки`,
         });
-      } else if (err.statusCode === 404) {
+      } else if (err.statusCode === ERR.NotFound) {
         res
-          .status(404)
+          .status(ERR.NotFound)
           .send({ message: `Карточка с указанным _id не найдена.` });
       } else {
-        res.status(500).send({ message: `Ошибка на сервере ${err.message}` });
+        res
+          .status(ERR.IntServ)
+          .send({ message: `Ошибка на сервере ${err.message}` });
       }
     });
 };
@@ -55,22 +69,24 @@ module.exports.likeCard = (req, res) => {
   )
     .orFail(() => {
       const error = new Error();
-      error.statusCode = 404;
+      error.statusCode = ERR.NotFound;
       throw error;
     })
     .populate("likes")
-    .then((likeOnCard) => res.status(200).send({ data: likeOnCard }))
+    .then((likeOnCard) => res.status(OK.OK).send({ data: likeOnCard }))
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(400).send({
+        res.status(ERR.BadRequest).send({
           message: `Переданы некорректные данные для постановки/снятии лайка`,
         });
-      } else if (err.statusCode === 404) {
+      } else if (err.statusCode === ERR.NotFound) {
         res
-          .status(404)
+          .status(ERR.NotFound)
           .send({ message: `Передан несуществующий _id карточки` });
       } else {
-        res.status(500).send({ message: `Ошибка на сервере ${err.message}` });
+        res
+          .status(ERR.IntServ)
+          .send({ message: `Ошибка на сервере ${err.message}` });
       }
     });
 };
@@ -83,23 +99,25 @@ module.exports.dislikeCard = (req, res) => {
   )
     .orFail(() => {
       const error = new Error();
-      error.statusCode = 404;
+      error.statusCode = ERR.NotFound;
       throw error;
     })
     .then((deleteLike) =>
-      res.status(200).send({ data: `Лайк на карточке удалён` })
+      res.status(OK.OK).send({ data: `Лайк на карточке удалён` })
     )
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(400).send({
+        res.status(ERR.BadRequest).send({
           message: `Переданы некорректные данные для постановки/снятии лайка`,
         });
-      } else if (err.statusCode === 404) {
+      } else if (err.statusCode === ERR.NotFound) {
         res
-          .status(404)
+          .status(ERR.NotFound)
           .send({ message: `Передан несуществующий _id карточки` });
       } else {
-        res.status(500).send({ message: `Ошибка на сервере ${err.message}` });
+        res
+          .status(ERR.IntServ)
+          .send({ message: `Ошибка на сервере ${err.message}` });
       }
     });
 };

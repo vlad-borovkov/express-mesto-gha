@@ -1,30 +1,42 @@
 const User = require("../models/user");
 
+const ERR = {
+  IntServ: 500,
+  NotFound: 404,
+  BadRequest: 400,
+};
+
+const OK = {
+  OK: 200,
+};
+
 module.exports.getAllUsers = (req, res) => {
   User.find({})
-    .then((users) => res.status(200).send({ data: users }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .then((users) => res.status(OK.OK).send({ data: users }))
+    .catch((err) => res.status(ERR.IntServ).send({ message: err.message }));
 };
 
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.userId) //методом поиска обращаемся к бд
     .orFail(() => {
       const error = new Error();
-      error.statusCode = 404;
+      error.statusCode = ERR.NotFound;
       throw error;
     })
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => res.status(OK.OK).send({ data: user }))
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(400).send({
+        res.status(ERR.BadRequest).send({
           message: `Переданы некорректные данные`,
         });
-      } else if (err.statusCode === 404) {
-        res.status(404).send({
+      } else if (err.statusCode === ERR.NotFound) {
+        res.status(ERR.NotFound).send({
           message: `Пользователь по указанному _id не найден`,
         });
       } else {
-        res.send({ message: `Ошибка на сервере ${err.message}` });
+        res
+          .status(ERR.IntServ)
+          .send({ message: `Ошибка на сервере ${err.message}` });
       }
     });
 };
@@ -33,14 +45,16 @@ module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => res.status(OK.OK).send({ data: user }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(400).send({
+        res.status(ERR.BadRequest).send({
           message: `Переданы некорректные данные при создании пользователя`,
         });
       } else {
-        res.status(500).send({ message: `Ошибка на сервере ${err.message}` });
+        res
+          .status(ERR.IntServ)
+          .send({ message: `Ошибка на сервере ${err.message}` });
       }
     });
 };
@@ -55,21 +69,23 @@ module.exports.updateUser = (req, res) => {
   )
     .orFail(() => {
       const error = new Error();
-      error.statusCode = 404;
+      error.statusCode = ERR.NotFound;
       throw error;
     })
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => res.status(OK.OK).send({ data: user }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(400).send({
+        res.status(ERR.BadRequest).send({
           message: `Переданы некорректные данные при обновлении профиля`,
         });
-      } else if (error.statusCode === 404) {
+      } else if (err.statusCode === ERR.NotFound) {
         res
-          .status(404)
+          .status(ERR.NotFound)
           .send({ message: `Пользователь с указанным _id не найден` });
       } else {
-        res.status(500).send({ message: `Ошибка на сервере ${err.message}` });
+        res
+          .status(ERR.IntServ)
+          .send({ message: `Ошибка на сервере ${err.message}` });
       }
     });
 };
@@ -84,21 +100,23 @@ module.exports.updateUserAvatar = (req, res) => {
   )
     .orFail(() => {
       const error = new Error();
-      error.statusCode = 404;
+      error.statusCode = ERR.NotFound;
       throw error;
     })
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => res.status(OK.OK).send({ data: user }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(400).send({
+        res.status(ERR.BadRequest).send({
           message: `Переданы некорректные данные при обновлении аватара`,
         });
-      } else if (error.statusCode === 404) {
+      } else if (err.statusCode === ERR.NotFound) {
         res
-          .status(404)
+          .status(ERR.NotFound)
           .send({ message: `Пользователь с указанным _id не найден` });
       } else {
-        res.status(500).send({ message: `Ошибка на сервере ${err.message}` });
+        res
+          .status(ERR.IntServ)
+          .send({ message: `Ошибка на сервере ${err.message}` });
       }
     });
 };
