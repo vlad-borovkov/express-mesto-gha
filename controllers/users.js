@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const bcrypt = require("bcryptjs");
 
 const ERR = {
   IntServ: 500,
@@ -8,6 +9,18 @@ const ERR = {
 
 const OK = {
   OK: 200,
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      res.status(201).send(user);
+    })
+    .catch((err) => {
+      res.status(401).send({ message: err.message });
+    });
 };
 
 module.exports.getAllUsers = (req, res) => {
@@ -42,21 +55,23 @@ module.exports.getUserById = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const { email, password, name, about, avatar } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.status(OK.OK).send({ data: user }))
-    .catch((err) => {
-      if (err.name === "ValidationError") {
-        res.status(ERR.BadRequest).send({
-          message: `Переданы некорректные данные при создании пользователя`,
-        });
-      } else {
-        res
-          .status(ERR.IntServ)
-          .send({ message: `Ошибка на сервере ${err.message}` });
-      }
-    });
+  bcrypt.hash(password, 10).then((hash) =>
+    User.create({ email, password: hash, name, about, avatar })
+      .then((user) => res.status(OK.OK).send({ data: user }))
+      .catch((err) => {
+        if (err.name === "ValidationError") {
+          res.status(ERR.BadRequest).send({
+            message: `Переданы некорректные данные при создании пользователя`,
+          });
+        } else {
+          res
+            .status(ERR.IntServ)
+            .send({ message: `Ошибка на сервере ${err.message}` });
+        }
+      })
+  );
 };
 
 module.exports.updateUser = (req, res) => {
