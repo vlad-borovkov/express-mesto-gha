@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const ERR = {
   IntServ: 500,
@@ -16,7 +17,10 @@ module.exports.login = (req, res) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      res.status(201).send(user);
+      const token = jwt.sign({ _id: user._id }, "some-secret-key", {
+        expiresIn: "7d",
+      });
+      res.status(201).send({ token });
     })
     .catch((err) => {
       res.status(401).send({ message: err.message });
@@ -66,6 +70,7 @@ module.exports.createUser = (req, res) => {
             message: `Переданы некорректные данные при создании пользователя`,
           });
         } else {
+          console.log(err);
           res
             .status(ERR.IntServ)
             .send({ message: `Ошибка на сервере ${err.message}` });

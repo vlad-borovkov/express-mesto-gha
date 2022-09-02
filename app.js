@@ -7,6 +7,9 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.json()); // для собирания JSON-формата
 app.use(bodyParser.urlencoded({ extended: true })); // для приёма веб-страниц внутри POST-запроса
 
+const { createUser, login } = require("./controllers/users");
+const auth = require("./middlewares/auth");
+
 mongoose.connect("mongodb://localhost:27017/mestodb", {});
 
 app.use((req, res, next) => {
@@ -16,6 +19,13 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.post("/signin", login);
+app.post("/signup", createUser);
+
+//to do 6. Создайте контроллер и роут для получения информации о пользователе
+
+app.use(auth);
 
 app.use("/users", require("./routes/users"));
 app.use("/cards", require("./routes/card"));
