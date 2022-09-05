@@ -12,19 +12,11 @@ const auth = require("./middlewares/auth");
 
 mongoose.connect("mongodb://localhost:27017/mestodb", {});
 
-// app.use((req, res, next) => {
-//   req.user = {
-//     _id: "63048c9b8976910f72ec0b6d", //хардкодим аутентификацию
-//   };
-
-//   next();
-// });
-
 app.post("/signup", createUser);
 app.post("/signin", login);
-
+///вратА аутентификации\\\
 app.use(auth);
-
+///вратА аутентификации\\\
 app.use("/users", require("./routes/users"));
 app.use("/cards", require("./routes/card"));
 

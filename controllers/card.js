@@ -13,6 +13,7 @@ const OK = {
 module.exports.getAllCards = (req, res) => {
   Card.find({})
     .populate("owner")
+    .populate("likes")
     .then((cards) => res.status(OK.OK).send({ data: cards }))
     .catch((err) => res.status(ERR.IntServ).send({ message: err.message }));
 };
@@ -37,28 +38,46 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCardById = (req, res) => {
-  Card.findByIdAndRemove({ _id: req.params.cardId })
-    .orFail(() => {
-      const error = new Error();
-      error.statusCode = ERR.NotFound;
-      throw error;
+  const currentUser = req.user._id;
+
+  //мэтч хозяина карточки и пльзователя в req.user._id
+  Card.findById(req.params.cardId)
+    .then((card) => {
+      console.log(card);
+      const cardOwner = card.owner._id;
+      if (currentUser == cardOwner) {
+        Card.findByIdAndRemove({ _id: req.params.cardId })
+          .orFail(() => {
+            const error = new Error();
+            error.statusCode = ERR.NotFound;
+            throw error;
+          })
+          .then((card) => res.status(OK.OK).send({ data: `Карточка удалена!` }))
+          .catch((err) => {
+            if (err.name === "CastError") {
+              res.status(ERR.BadRequest).send({
+                message: `Переданы некорректные данные для удаления карточки`,
+              });
+            } else if (err.statusCode === ERR.NotFound) {
+              res
+                .status(ERR.NotFound)
+                .send({ message: `Карточка с указанным _id не найдена.` });
+            } else {
+              res
+                .status(ERR.IntServ)
+                .send({ message: `Ошибка на сервере ${err.message}` });
+            }
+          });
+      } else
+        res
+          .status(401)
+          .send({ message: "Возможно удаление только своих карточек" });
     })
-    .then((card) => res.status(OK.OK).send({ data: `Карточка удалена!` }))
-    .catch((err) => {
-      if (err.name === "CastError") {
-        res.status(ERR.BadRequest).send({
-          message: `Переданы некорректные данные для удаления карточки`,
-        });
-      } else if (err.statusCode === ERR.NotFound) {
-        res
-          .status(ERR.NotFound)
-          .send({ message: `Карточка с указанным _id не найдена.` });
-      } else {
-        res
-          .status(ERR.IntServ)
-          .send({ message: `Ошибка на сервере ${err.message}` });
-      }
-    });
+    .catch((err) =>
+      res
+        .status(ERR.IntServ)
+        .send({ message: `Ошибка на сервере ${err.message}` })
+    );
 };
 
 module.exports.likeCard = (req, res) => {
