@@ -12,18 +12,16 @@ const auth = require("./middlewares/auth");
 
 mongoose.connect("mongodb://localhost:27017/mestodb", {});
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: "63048c9b8976910f72ec0b6d", //хардкодим аутентификацию
-  };
+// app.use((req, res, next) => {
+//   req.user = {
+//     _id: "63048c9b8976910f72ec0b6d", //хардкодим аутентификацию
+//   };
 
-  next();
-});
+//   next();
+// });
 
-app.post("/signin", login);
 app.post("/signup", createUser);
-
-//to do 6. Создайте контроллер и роут для получения информации о пользователе
+app.post("/signin", login);
 
 app.use(auth);
 

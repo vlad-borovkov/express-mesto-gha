@@ -12,11 +12,40 @@ const OK = {
   OK: 200,
 };
 
+module.exports.getCurrentUser = (req, res) => {
+  //достаём авторизационный заголовок
+  console.log("пришел запрос в getCurrent");
+  User.findById(req.user._id) //методом поиска обращаемся к бд
+    .orFail(() => {
+      const error = new Error();
+      error.statusCode = ERR.NotFound;
+      throw error;
+    })
+    .then((user) => res.status(OK.OK).send({ data: user }))
+    .catch((err) => {
+      if (err.name === "CastError") {
+        res.status(ERR.BadRequest).send({
+          message: `Переданы некорректные данные`,
+        });
+      } else if (err.statusCode === ERR.NotFound) {
+        res.status(ERR.NotFound).send({
+          message: `Пользователь по указанному _id не найден`,
+        });
+      } else {
+        res
+          .status(ERR.IntServ)
+          .send({ message: `Ошибка на сервере ${err.message}` });
+      }
+    });
+};
+
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
+      // const userId = user._id.toString();
+
       const token = jwt.sign({ _id: user._id }, "some-secret-key", {
         expiresIn: "7d",
       });
@@ -34,6 +63,7 @@ module.exports.getAllUsers = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
+  console.log("пришел запрос в getById");
   User.findById(req.params.userId) //методом поиска обращаемся к бд
     .orFail(() => {
       const error = new Error();
