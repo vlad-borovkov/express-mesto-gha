@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
-const { default: isEmail } = require("validator/lib/isemail");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -36,7 +35,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: (v) => isEmail(v),
+      validator: (email) => validator.isEmail(email),
       message: "There is not your email",
     },
   },
