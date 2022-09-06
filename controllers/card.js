@@ -2,6 +2,7 @@ const Card = require("../models/card");
 const NotFoundError = require("../errors/not-found-error");
 const BadRequestError = require("../errors/bad-request-error");
 const UnauthError = require("../errors/unauth-error");
+const ForbiddenError = require("../errors/forbidden-error");
 const card = require("../models/card");
 
 const ERR = {
@@ -66,7 +67,8 @@ module.exports.deleteCardById = (req, res, next) => {
               } else res.status(OK.OK).send({ data: `Карточка удалена!` });
             })
             .catch(next);
-        } else throw new UnauthError("Возможно удаление только своих карточек");
+        } else
+          throw new ForbiddenError("Возможно удаление только своих карточек");
       }
     })
     .catch(next);

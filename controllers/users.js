@@ -45,7 +45,7 @@ module.exports.login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, "some-secret-key", {
         expiresIn: "7d",
       });
-      res.status(201).send({ token });
+      res.status(200).send({ token });
     })
     .catch((err) => {
       res.status(401).send({ message: err.message });
@@ -65,8 +65,8 @@ module.exports.getUserById = (req, res) => {
       error.statusCode = ERR.NotFound;
       throw error;
     })
-    .then((user) =>
-      res.status(OK.OK).send({ data: user.deletePasswordFromUser() })
+    .then(
+      (user) => res.status(OK.OK).send({ message: "пользоватлеь добавлен" }) //data: user.deletePasswordFromUser()
     )
     .catch((err) => {
       if (err.name === "CastError") {
