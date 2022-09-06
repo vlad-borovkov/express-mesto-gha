@@ -25,9 +25,8 @@ const userSchema = new mongoose.Schema({
     validate: {
       validator: (url) => validator.isURL(url),
       message: "There is not your email",
-      },
-      message: (props) => `${props.value} is not a valid URL!`,
     },
+    message: (props) => `${props.value} is not a valid URL!`,
   },
   email: {
     type: String,
