@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const { celebrate, Joi } = require("celebrate");
 
 const {
   getAllUsers,
@@ -10,9 +11,35 @@ const {
 
 router.get("/me", getCurrentUser); //возвращает инфо о текущем пользователе при получении токена
 router.get("/", getAllUsers);
-router.get("/:userId", getUserById);
+router.get(
+  "/:userId",
+  celebrate({
+    // валидируем параметры
+    params: Joi.object().keys({
+      userId: Joi.string().alphanum().length(24),
+    }),
+  }),
+  getUserById
+);
 
-router.patch("/me", updateUser); // обновляет профиль
-router.patch("/me/avatar", updateUserAvatar); // обновляет аватар
+router.patch(
+  "/me",
+  celebrate({
+    body: Joi.object().keys({
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+    }),
+  }),
+  updateUser
+); // обновляет профиль
+router.patch(
+  "/me/avatar",
+  celebrate({
+    body: Joi.object().keys({
+      avatar: Joi.string(),
+    }),
+  }),
+  updateUserAvatar
+); // обновляет аватар
 
 module.exports = router;

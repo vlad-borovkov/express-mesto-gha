@@ -1,4 +1,8 @@
 const Card = require("../models/card");
+const NotFoundError = require("../errors/not-found-error");
+const BadRequestError = require("../errors/bad-request-error");
+const UnauthError = require("../errors/unauth-error");
+const card = require("../models/card");
 
 const ERR = {
   IntServ: 500,
@@ -10,74 +14,62 @@ const OK = {
   OK: 200,
 };
 
-module.exports.getAllCards = (req, res) => {
+module.exports.getAllCards = (req, res, next) => {
   Card.find({})
     .populate("owner")
     .populate("likes")
-    .then((cards) => res.status(OK.OK).send({ data: cards }))
-    .catch((err) => res.status(ERR.IntServ).send({ message: err.message }));
+    .then((cards) => {
+      if (!cards) {
+        throw new BadRequestError("Некорректный запрос");
+      }
+      res.status(OK.OK).send({ data: cards });
+    })
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const userId = req.user._id;
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: userId })
-    .then((cards) => res.send({ data: cards }))
-    .catch((err) => {
-      if (err.name === "ValidationError") {
-        res.status(ERR.BadRequest).send({
-          message: `Переданы некорректные данные при создании карточки`,
-        });
-      } else {
-        res
-          .status(ERR.IntServ)
-          .send({ message: `Ошибка на сервере ${err.message}` });
+    .then((cards) => {
+      if (!cards) {
+        throw new BadRequestError(
+          "Переданы некорректные данные при создании карточки"
+        );
       }
-    });
+
+      res.send({ data: cards });
+    })
+
+    .catch(next);
 };
 
-module.exports.deleteCardById = (req, res) => {
+module.exports.deleteCardById = (req, res, next) => {
   const currentUser = req.user._id;
 
-  //мэтч хозяина карточки и пльзователя в req.user._id
+  //удаляет только сам user:мэтч хозяина карточки и пльзователя в req.user._id
   Card.findById(req.params.cardId)
     .then((card) => {
-      console.log(card);
-      const cardOwner = card.owner._id;
-      if (currentUser == cardOwner) {
-        Card.findByIdAndRemove({ _id: req.params.cardId })
-          .orFail(() => {
-            const error = new Error();
-            error.statusCode = ERR.NotFound;
-            throw error;
-          })
-          .then((card) => res.status(OK.OK).send({ data: `Карточка удалена!` }))
-          .catch((err) => {
-            if (err.name === "CastError") {
-              res.status(ERR.BadRequest).send({
-                message: `Переданы некорректные данные для удаления карточки`,
-              });
-            } else if (err.statusCode === ERR.NotFound) {
-              res
-                .status(ERR.NotFound)
-                .send({ message: `Карточка с указанным _id не найдена.` });
-            } else {
-              res
-                .status(ERR.IntServ)
-                .send({ message: `Ошибка на сервере ${err.message}` });
-            }
-          });
-      } else
-        res
-          .status(401)
-          .send({ message: "Возможно удаление только своих карточек" });
+      if (!card) {
+        throw new NotFoundError("Нет карточки с таким id");
+      } else {
+        const cardOwner = card.owner._id;
+
+        if (currentUser == cardOwner) {
+          Card.findByIdAndRemove({ _id: req.params.cardId })
+            .then((card) => {
+              if (!card) {
+                throw new BadRequestError(
+                  "Переданы некорректные данные при удалении карточки"
+                );
+              } else res.status(OK.OK).send({ data: `Карточка удалена!` });
+            })
+            .catch(next);
+        } else throw new UnauthError("Возможно удаление только своих карточек");
+      }
     })
-    .catch((err) =>
-      res
-        .status(ERR.IntServ)
-        .send({ message: `Ошибка на сервере ${err.message}` })
-    );
+    .catch(next);
 };
 
 module.exports.likeCard = (req, res) => {

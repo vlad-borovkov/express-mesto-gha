@@ -13,8 +13,6 @@ const OK = {
 };
 
 module.exports.getCurrentUser = (req, res) => {
-  //достаём авторизационный заголовок
-  console.log("пришел запрос в getCurrent");
   User.findById(req.user._id) //методом поиска обращаемся к бд
     .orFail(() => {
       const error = new Error();
@@ -61,7 +59,6 @@ module.exports.getAllUsers = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  console.log("пришел запрос в getById");
   User.findById(req.params.userId) //методом поиска обращаемся к бд
     .orFail(() => {
       const error = new Error();
