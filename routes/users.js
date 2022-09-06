@@ -36,7 +36,7 @@ router.patch(
   "/me/avatar",
   celebrate({
     body: Joi.object().keys({
-      avatar: Joi.string(),
+      avatar: Joi.string().min(5), //2
     }),
   }),
   updateUserAvatar

@@ -19,7 +19,7 @@ app.post(
       email: Joi.string().email().required(),
       password: Joi.string().required().min(8),
       name: Joi.string().min(2).max(30),
-      avatar: Joi.string(),
+      avatar: Joi.string().min(5), //1
       about: Joi.string().min(2).max(30),
     }),
   }),
