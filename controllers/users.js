@@ -94,8 +94,11 @@ module.exports.createUser = (req, res) => {
           res.status(ERR.BadRequest).send({
             message: `Переданы некорректные данные при создании пользователя`,
           });
+        } else if (err.code === 11000) {
+          res
+            .status(409)
+            .send({ message: "Такой пользователь уже существует" });
         } else {
-          console.log(err);
           res
             .status(ERR.IntServ)
             .send({ message: `Ошибка на сервере ${err.message}` });
