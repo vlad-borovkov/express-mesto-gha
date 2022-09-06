@@ -32,14 +32,6 @@ router.patch(
   }),
   updateUser
 ); // обновляет профиль
-router.patch(
-  "/me/avatar",
-  celebrate({
-    body: Joi.object().keys({
-      avatar: Joi.string(),
-    }),
-  }),
-  updateUserAvatar
-); // обновляет аватар
+router.patch("/me/avatar", updateUserAvatar); // обновляет аватар
 
 module.exports = router;
