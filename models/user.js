@@ -23,10 +23,8 @@ const userSchema = new mongoose.Schema({
       "https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png",
     required: false,
     validate: {
-      validator: function (v) {
-        return /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/.test(
-          v
-        );
+      validator: (url) => validator.isURL(url),
+      message: "There is not your email",
       },
       message: (props) => `${props.value} is not a valid URL!`,
     },
