@@ -11,13 +11,10 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: function (v) {
-        return /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/.test(
-          v
-        );
-      },
-      message: (props) => `${props.value} is not a valid URL!`,
+      validator: (url) => validator.isURL(url),
+      message: "There is not your email",
     },
+    message: (props) => `${props.value} is not a valid URL!`,
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
