@@ -65,8 +65,13 @@ module.exports.getUserById = (req, res) => {
       error.statusCode = ERR.NotFound;
       throw error;
     })
-    .then(
-      (user) => res.status(OK.OK).send({ message: "пользоватлеь добавлен" }) //data: user.deletePasswordFromUser()
+    .then((user) =>
+      res.status(OK.OK).send({
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+      })
     )
     .catch((err) => {
       if (err.name === "CastError") {
@@ -91,7 +96,12 @@ module.exports.createUser = (req, res) => {
   bcrypt.hash(password, 10).then((hash) =>
     User.create({ email, password: hash, name, about, avatar })
       .then((user) => {
-        res.status(OK.OK).send({ data: user.deletePasswordFromUser() });
+        res.status(OK.OK).send({
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+          email: user.email,
+        });
       })
       .catch((err) => {
         if (err.name === "ValidationError") {
