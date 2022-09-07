@@ -62,6 +62,14 @@ userSchema.statics.findUserByCredentials = function (email, password) {
     });
 };
 
+function deletePasswordFromUser() {
+  const obj = this.toObject();
+  delete obj.password;
+  return;
+}
+
+userSchema.methods.deletePasswordFromUser = deletePasswordFromUser;
+
 module.exports = mongoose.model(
   "user",
   userSchema.index({ email: 1 }, { unique: true })
