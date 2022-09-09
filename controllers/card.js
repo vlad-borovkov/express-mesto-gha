@@ -15,8 +15,8 @@ const OK = {
 module.exports.getAllCards = (req, res, next) => {
   Card.find({})
     .populate("owner")
-    .populate("like")
-    .then((cards) => res.status(OK.OK).send({ data: cards }))
+    .populate("likes")
+    .then((cards) => res.status(200).send({ data: cards }))
     .catch(next);
 };
 
