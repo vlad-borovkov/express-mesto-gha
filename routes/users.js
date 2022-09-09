@@ -1,3 +1,5 @@
+/* eslint-disable comma-dangle */
+/* eslint-disable quotes */
 const router = require("express").Router();
 const { celebrate, Joi } = require("celebrate");
 
@@ -9,7 +11,7 @@ const {
   getCurrentUser,
 } = require("../controllers/users");
 
-router.get("/me", getCurrentUser); //возвращает инфо о текущем пользователе при получении токена
+router.get("/me", getCurrentUser); // возвращает инфо о текущем пользователе при получении токена
 router.get("/", getAllUsers);
 router.get(
   "/:userId",
@@ -38,7 +40,7 @@ router.patch(
     body: Joi.object().keys({
       avatar: Joi.string().regex(
         /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/
-      ), //1
+      ), // 1
     }),
   }),
   updateUserAvatar

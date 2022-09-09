@@ -1,4 +1,8 @@
+/* eslint-disable comma-dangle */
+/* eslint-disable quotes */
+// eslint-disable-next-line quotes
 const router = require("express").Router();
+// eslint-disable-next-line quotes
 const { celebrate, Joi } = require("celebrate");
 
 const {
@@ -9,6 +13,7 @@ const {
   dislikeCard,
 } = require("../controllers/card");
 
+// eslint-disable-next-line quotes
 router.get("/", getAllCards);
 
 router.post(

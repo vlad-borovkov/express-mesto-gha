@@ -1,27 +1,38 @@
+/* eslint-disable comma-dangle */
+/* eslint-disable no-console */
+/* eslint-disable no-unused-vars */
+/* eslint-disable quotes */
 const express = require("express");
-const mongoose = require("mongoose");
-const { PORT = 3000 } = process.env;
+// вызываем библиоетку express
 const app = express();
-const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+// мостик между нодой и mongo
+const { PORT = 3000 } = process.env; // локальный порт нашего сервера
+const bodyParser = require("body-parser"); // преобразуем общение клиент-сервер в json
 const { celebrate, Joi, errors } = require("celebrate");
+// для защиты роутов валидацией
 app.use(bodyParser.json()); // для собирания JSON-формата
 app.use(bodyParser.urlencoded({ extended: true })); // для приёма веб-страниц внутри POST-запроса
-
+const { requestLogger, errorLogger } = require("./middlewares/logger"); // для ведения логов ошибок
 const { createUser, login } = require("./controllers/users");
 const auth = require("./middlewares/auth");
+const NotFoundError = require("./errors/not-found-error");
 
-mongoose.connect("mongodb://localhost:27017/mestodb", {});
+// порядок расположения обращений к app - КРАЙНЕ ВАЖЕН
+mongoose.connect("mongodb://localhost:27017/mestodb", {}); // даём знать мангусту где наша БД
+
+app.use(requestLogger); // подключаем логгер запросов
 
 app.post(
   "/signup",
   celebrate({
     body: Joi.object().keys({
       email: Joi.string().email().required(),
-      password: Joi.string().required().min(8),
+      password: Joi.string().required(),
       name: Joi.string().min(2).max(30),
       avatar: Joi.string().regex(
         /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/
-      ), //1
+      ), // 1
       about: Joi.string().min(2).max(30),
     }),
   }),
@@ -32,31 +43,29 @@ app.post(
   celebrate({
     body: Joi.object().keys({
       email: Joi.string().email().required(),
-      password: Joi.string().required().min(8),
+      password: Joi.string().required(),
     }),
   }),
   login
 );
 
-///вратА аутентификации\\\
+/// вратА аутентификации\\\
 app.use(auth);
-///вратА аутентификации\\\
+/// вратА аутентификации\\\
 app.use("/users", require("./routes/users"));
 app.use("/cards", require("./routes/card"));
 
 app.use((req, res, next) => {
-  res.status(404).send({
-    message:
-      "Вы попали на сервер Mesto. Воспользуйтесь эндпоинтами для операций с данными.",
-  });
-
-  next();
+  next(new NotFoundError("Такой страницы не существует"));
 });
+
+app.use(errorLogger); // подключаем логгер ошибок
 
 // обработчики ошибок
 app.use(errors()); // обработчик ошибок celebrate
 
 app.use((err, req, res, next) => {
+  // централизованный обработчик ошибок
   // если у ошибки нет статуса, выставляем 500
   const { statusCode = 500, message } = err;
 

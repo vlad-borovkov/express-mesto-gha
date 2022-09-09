@@ -1,6 +1,11 @@
+/* eslint-disable func-names */
+/* eslint-disable comma-dangle */
+/* eslint-disable max-len */
+/* eslint-disable quotes */
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
+const UnauthError = require("../errors/unauth-error");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -39,7 +44,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 8,
     select: false, // необходимо добавить поле select,Так по умолчанию хеш пароля пользователя не будет возвращаться из базы
   },
 });
@@ -49,23 +53,27 @@ userSchema.statics.findUserByCredentials = function (email, password) {
     .select("+password")
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error("Неправильные почта или пароль"));
+        throw new UnauthError("Неправильные почта или пароль");
       }
 
-      return bcrypt.compare(password, user.password).then((matched) => {
-        if (!matched) {
-          return Promise.reject(new Error("Неправильные почта или пароль"));
-        }
+      return (
+        bcrypt
+          .compare(password, user.password)
+          // eslint-disable-next-line consistent-return
+          .then((matched) => {
+            if (!matched) {
+              throw new UnauthError("Неправильные почта или пароль");
+            }
 
-        return user;
-      });
+            return user;
+          })
+      );
     });
 };
 
 function deletePasswordFromUser() {
   const obj = this.toObject();
   delete obj.password;
-  return;
 }
 
 userSchema.methods.deletePasswordFromUser = deletePasswordFromUser;
