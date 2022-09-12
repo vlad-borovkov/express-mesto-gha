@@ -8,6 +8,7 @@ const app = express();
 const mongoose = require("mongoose");
 // мостик между нодой и mongo
 const { PORT = 3000 } = process.env; // локальный порт нашего сервера
+const cors = require("cors"); // контролируем кросс-доменные запросы
 const bodyParser = require("body-parser"); // преобразуем общение клиент-сервер в json
 const { celebrate, Joi, errors } = require("celebrate");
 // для защиты роутов валидацией
@@ -22,6 +23,22 @@ const NotFoundError = require("./errors/not-found-error");
 mongoose.connect("mongodb://localhost:27017/mestodb", {}); // даём знать мангусту где наша БД
 
 app.use(requestLogger); // подключаем логгер запросов
+
+const options = {
+  origin: ["http://localhost:3001"],
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+  allowedHeaders: [
+    "Content-Type",
+    "origin",
+    "Authorization",
+    "Access-Control-Allow-Methods",
+  ],
+  credentials: true,
+};
+
+app.use("*", cors(options)); // ПЕРВЫМ!
 
 app.post(
   "/signup",

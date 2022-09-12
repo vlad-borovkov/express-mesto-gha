@@ -16,7 +16,7 @@ module.exports.getAllCards = (req, res, next) => {
   Card.find({})
     .populate("owner")
     .populate("likes")
-    .then((cards) => res.status(200).send({ data: cards }))
+    .then((cards) => res.status(200).send({ cards }))
     .catch(next);
 };
 
@@ -25,7 +25,7 @@ module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: userId })
-    .then((cards) => res.status(201).send({ data: cards }))
+    .then((cards) => res.status(201).send({ cards }))
     .catch((err) => {
       if (err.name === "ValidationError") {
         next(
