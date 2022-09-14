@@ -16,7 +16,9 @@ module.exports.getAllCards = (req, res, next) => {
   Card.find({})
     .populate("owner")
     .populate("likes")
-    .then((cards) => res.status(200).send({ cards }))
+    .then((cards) => {
+      res.status(200).send({ cards });
+    })
     .catch(next);
 };
 
@@ -25,7 +27,8 @@ module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: userId })
-    .then((cards) => res.status(201).send({ cards }))
+    .then((cards) => cards.populate("owner"))
+    .then((cards) => res.status(200).send({ cards }))
     .catch((err) => {
       if (err.name === "ValidationError") {
         next(
@@ -73,7 +76,8 @@ module.exports.likeCard = (req, res, next) => {
       throw new NotFoundError("Передан несуществующий _id карточки");
     })
     .populate("likes")
-    .then((likeOnCard) => res.status(OK.OK).send({ data: likeOnCard }))
+    .populate("owner")
+    .then((likeOnCard) => res.status(OK.OK).send({ likes: likeOnCard }))
     .catch((err) => {
       if (err.name === "CastError") {
         next(new BadRequestError("Переданы некорректные данные"));
@@ -92,9 +96,9 @@ module.exports.dislikeCard = (req, res, next) => {
     .orFail(() => {
       throw new NotFoundError("Передан несуществующий _id карточки");
     })
-    .then((deleteLike) =>
-      res.status(OK.OK).send({ data: `Лайк на карточке удалён` })
-    )
+    .populate("likes")
+    .populate("owner")
+    .then((deleteLike) => res.status(OK.OK).send({ likes: deleteLike }))
     .catch((err) => {
       if (err.name === "CastError") {
         next(new BadRequestError("Переданы некорректные данные"));

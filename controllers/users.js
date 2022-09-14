@@ -16,6 +16,7 @@ const OK = {
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
+  console.log(req.user._id); // почему летит два id когда с сайта???
   User.findById(req.user._id) // методом поиска обращаемся к бд
     .orFail(() => {
       throw new NotFoundError("Указанный пользователь не найден");
