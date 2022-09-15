@@ -25,7 +25,12 @@ mongoose.connect("mongodb://localhost:27017/mestodb", {}); // даём знат�
 app.use(requestLogger); // подключаем логгер запросов
 
 const options = {
-  origin: ["http://vmesto.insta.nomoredomains.sbs"],
+  origin: [
+    "http://vmesto.insta.nomoredomains.sbs",
+    "https://vmesto.insta.nomoredomains.sbs",
+    "http://localhost:3001",
+    "https://localhost:3001",
+  ],
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
   preflightContinue: false,
   optionsSuccessStatus: 204,
