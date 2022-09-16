@@ -1,4 +1,5 @@
 /* eslint-disable quotes */
+const { NODE_ENV, JWT_SECRET } = process.env;
 const jwt = require("jsonwebtoken");
 const UnauthorizedError = require("../errors/unauth-error");
 
@@ -13,7 +14,10 @@ module.exports = (req, res, next) => {
     // верефицируем токен
     const token = authorization.replace("Bearer ", "");
 
-    payload = jwt.verify(token, "some-secret-key");
+    payload = jwt.verify(
+      token,
+      NODE_ENV === "production" ? JWT_SECRET : "dev-secret"
+    );
 
     req.user = payload; // записываем пейлоуд в объект запроса
   }

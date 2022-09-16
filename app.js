@@ -2,12 +2,15 @@
 /* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 /* eslint-disable quotes */
+require("dotenv").config();
 const express = require("express");
+
 // вызываем библиоетку express
 const app = express();
 const mongoose = require("mongoose");
 // мостик между нодой и mongo
 const { PORT = 3000 } = process.env; // локальный порт нашего сервера
+
 const cors = require("cors"); // контролируем кросс-доменные запросы
 const bodyParser = require("body-parser"); // преобразуем общение клиент-сервер в json
 const { celebrate, Joi, errors } = require("celebrate");
@@ -18,6 +21,7 @@ const { requestLogger, errorLogger } = require("./middlewares/logger"); // дл�
 const { createUser, login } = require("./controllers/users");
 const auth = require("./middlewares/auth");
 const NotFoundError = require("./errors/not-found-error");
+const { config } = require("dotenv");
 
 // порядок расположения обращений к app - КРАЙНЕ ВАЖЕН
 mongoose.connect("mongodb://localhost:27017/mestodb", {}); // даём знать мангусту где наша БД
@@ -44,6 +48,12 @@ const options = {
 };
 
 app.use("*", cors(options)); // ПЕРВЫМ!
+
+app.get("/crash-test", () => {
+  setTimeout(() => {
+    throw new Error("Сервер сейчас упадёт");
+  }, 0);
+});
 
 app.post(
   "/signup",
